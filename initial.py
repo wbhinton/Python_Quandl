@@ -11,4 +11,4 @@ import numpy
 import pandas
 """This sets the Quandl API Key"""
 
-quandl.ApiConfig.api_key="-RHX3yVqCy9ZPgpmf2h3"
+quandl.ApiConfig.api_key="YOUR API KEY"
