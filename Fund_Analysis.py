@@ -35,26 +35,49 @@ data = response.read().decode("utf-8")
 jdata = json.loads(data)
 csvfile = open('fund_analy.csv', 'w')
 writer = csv.writer(csvfile, lineterminator='\n')
+
+
+
 for i in jdata:
-        try:
+    try:
         tic = i["Ticker"]
         
-        """Set current date and 1yr prior"""
-        now = datetime.date.today()
-        year = datetime.timedelta(365)
-        yearago = now - year
-        lastyear = yearago.strftime("%Y-%m-%d")
+        try:
+            """Set current date and 1yr prior"""
+            now=datetime.date.today()
+            year=datetime.timedelta(365)
+            yearago=now-year
+            lastyear=yearago.strftime("%Y-%m-%d")
+    
+            """Collect the Data"""
+            CurrentPrice=float(ystockquote.get_price(tic))
+            LastYearQuote=ystockquote.get_historical_prices(tic,lastyear,lastyear)
+            LastYearPrice=float(LastYearQuote.get(lastyear).get('Close'))
+
+        except: 
+            """Set current date and 1yr prior"""
+            now=datetime.date.today()
+            year=datetime.timedelta(360)
+            yearago=now-year
+            lastyear=yearago.strftime("%Y-%m-%d")
+    
+            """Collect the Data"""
+            CurrentPrice=float(ystockquote.get_price(tic))
+            LastYearQuote=ystockquote.get_historical_prices(tic,lastyear,lastyear)
+            LastYearPrice=float(LastYearQuote.get(lastyear).get('Close'))
 
         """Collect the Data"""
         CurrentPrice = float(ystockquote.get_price(tic))
         LastYearQuote = ystockquote.get_historical_prices(
             tic, lastyear, lastyear)
+            
         LastYearPrice = float(LastYearQuote.get(lastyear).get('Close'))
         Receivables = pd.DataFrame(ql.get("SF0/%s_RECEIVABLES_MRY" % tic))
         Inventory = pd.DataFrame(ql.get("SF0/%s_INVENTORY_MRY" % tic))
         TotalCurrentAssets = pd.DataFrame(ql.get("SF0/%s_ASSETSC_MRY" % tic))
         TotalCurrentLiabilities = pd.DataFrame(
             ql.get("SF0/%s_LIABILITIESC_MRY" % tic))
+            
         Debt = pd.DataFrame(ql.get("SF0/%s_DEBTUSD_MRY" % tic))
         Equity = pd.DataFrame(ql.get("SF0/%s_EQUITYUSD_MRY" % tic))
         GrossProfit = pd.DataFrame(ql.get("SF0/%s_GP_MRY" % tic))
@@ -140,9 +163,10 @@ for i in jdata:
         """Company Performance"""
         ChangeInSales = (Revenue.iat[0, 0] -
                          Revenue.iat[1, 0]) / Revenue.iat[1, 0]
-        CoPerform = (ChangeInSales / ((Inventory.iat[0, 0] + Receivables.iat[0, 0])
-                    - (Inventory.iat[1, 0] + Receivables.iat[1, 0]))) /                
-                    (Inventory.iat[1, 0] + Receivables.iat[1, 0])
+        CoPerform = (ChangeInSales / ((Inventory.iat[0, 0] + 
+                    Receivables.iat[0, 0])- (Inventory.iat[1, 0] 
+                    + Receivables.iat[1, 0]))) / (Inventory.iat[1, 0] 
+                    + Receivables.iat[1, 0])
         if CoPerform > ChangeInSales:
             Performance = "Underperform"
         Performance = "OK"
